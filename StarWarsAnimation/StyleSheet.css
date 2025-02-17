@@ -1,0 +1,10 @@
+﻿body {
+}
+.col-md-10{
+    display:flex;
+    justify-content: center;
+}
+#leinwand2{
+   position:absolute;
+ 
+}
