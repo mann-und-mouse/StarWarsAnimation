@@ -1,6 +1,6 @@
 ﻿class Animationslinie
 {
-    constructor()
+    constructor(ctx)
     {
         this.topLefty = yMid;
         this.bottomLeftx = xMid;
@@ -11,6 +11,7 @@
         this.topRighty = yMid;
         this.topLeftx = xMid;
         this.start;
+        this.ctx = ctx;
     }
     AnimatePerspective(timestamp)
     {
@@ -18,16 +19,14 @@
         {
             this.start = timestamp;
         }
-      
-    let elapsed = timestamp - this.start;
-    let shift = Math.min(speed * elapsed, netHeight);
-    if (this.bottomLefty != netHeight)
-    {
+
+        let elapsed = timestamp - this.start;
+        let shift = Math.min(speed * elapsed, netHeight);
         this.bottomLefty = Math.min(this.bottomLefty + shift, netHeight);
-        this.bottomLeftx = Math.max(this.bottomLeftx - shift, border + 182 ) ;
+        this.bottomLeftx = Math.max(this.bottomLeftx - shift, border + 182);
 
         this.bottomRighty = this.bottomLefty;
-        this.bottomRightx = Math.min(this.bottomRightx + shift, netWidth - 182) ;
+        this.bottomRightx = Math.min(this.bottomRightx + shift, netWidth - 182);
 
         this.topRightx = this.bottomRightx;
         this.topRighty = Math.max(this.topRighty - shift, border);
@@ -36,24 +35,33 @@
         this.topLeftx = this.bottomLeftx;
         this.topLefty = Math.max(this.topLefty - shift, border);
 
-    
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        DrawFullPicture();
+
         DrawLine2(this.topRightx, this.topRighty, this.bottomRightx, this.bottomLefty);
         DrawLine2(this.topLeftx, this.topLefty, this.bottomLeftx, this.bottomLefty);
         DrawLine2(this.bottomLeftx, this.bottomLefty, this.bottomRightx, this.bottomRighty);
-        requestAnimationFrame((timestamp)=> this.AnimatePerspective(timestamp));
+
+        if (this.bottomLefty >= netHeight)
+            this.BackToStart();
 
     }
-    else
-        requestAnimationFrame(ThePlan);
-    
-    }
+        BackToStart()
+        {
+            this.topLefty = yMid;
+            this.bottomLeftx = xMid;
+            this.bottomLefty = yMid;
+            this.bottomRightx = xMid;
+            this.bottomRighty = yMid;
+            this.topRightx = xMid;
+            this.topRighty = yMid;
+            this.topLeftx = xMid;
+            this.start = undefined;
+
+        }
 }
 const canvas = document.getElementById("leinwand");
 const ctx = canvas.getContext("2d");
 const canvas2 = document.getElementById("leinwand2");
-const ctx2 = canvas.getContext("2d");
+const ctx2 = canvas2.getContext("2d");
 ctx.strokeStyle = "#ffff00";
 ctx.lineWidth = 2;
 DrawBackground();
@@ -87,6 +95,10 @@ const netWidth = canvas.width - border;
 const netHeight = canvas.height - border;
 let xMid = canvas.width /2 
 let yMid = canvas.height / 2;
+const line1 = new Animationslinie();
+const line2 = new Animationslinie();
+const line3 = new Animationslinie();
+let lineStart;
 function ThePlan(timestamp)
 {
     start = timestamp;
@@ -170,32 +182,27 @@ function ThePlan(timestamp)
             requestAnimationFrame(AnimateDiagonalLine);
             break;
         case 8:
-            //y1Start = yMid;
-            //y1Destination = netHeight;
-            //scalar = 1;
-            //x1Start = xMid;
-            //x1End = xMid;
-            //speed = 0.02;
-            //let test = "wht";
-            //AnimatePerspective(timestamp)
-            ////requestAnimationFrame(AnimatePerspective);
-            speed = 0.005;
-            let line1 = new Animationslinie();
-            line1.AnimatePerspective(timestamp);
-            let line2 = new Animationslinie();
-            //requestAnimationFrame((timestamp) => line1.AnimatePerspective(timestamp));
-            line2.AnimatePerspective(timestamp);
-            //Sleep(100).then(line2.AnimatePerspective(timestamp));
+            speed = 0.0055;
+            requestAnimationFrame(AnimateLines);
             break;
-        //case 8:
-        //    DrawFullPicture();
     }
     if(step < 8)
         step++;
 }
-function Sleep(ms)
+function AnimateLines(timestamp)
 {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    if (lineStart == undefined)
+        lineStart = timestamp;
+    requestAnimationFrame(AnimateLines);
+    let elapsed = timestamp - lineStart;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    DrawFullPicture();
+    line1.AnimatePerspective(timestamp);
+    if (elapsed >= 350)
+        line2.AnimatePerspective(timestamp);
+    if (elapsed >= 650)
+        line3.AnimatePerspective(timestamp);
+
 }
 function AnimateDiagonalLine(timestamp)
 {
